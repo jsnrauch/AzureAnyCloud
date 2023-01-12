@@ -4,7 +4,7 @@ import subprocess
 import os
 
 # COM port setting
-COM_PORT = "COM4"
+COM_PORT = "your_COM_Port"
 
 class Delay_Non_Blocking:
   def __init__(self):

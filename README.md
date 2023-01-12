@@ -2,7 +2,7 @@
 
 ## Introduction
 
-[AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) is a Cloud connectivity solution package for Microchip's [WFI32E01PC](https://www.microchip.com/en-us/product/WFI32E01PC) IoT module that runs on the [PIC32 WFI32E Curiosity Board](https://www.microchip.com/en-us/development-tool/EV12F11A) or the [WFI32-IoT Development Board](https://www.microchip.com/en-us/development-tool/ev36w50a). The [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) solution includes a full set of firmware to enable custom modifications and the default binary image that can be used as well. The solution is publicly available on [Microchip Technology's GitHub account](https://github.com/MicrochipTech). To review the software, clone the repository, or simply download a ZIP file, access the [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) repository on [GitHub](https://github.com).
+[AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) is a Cloud connectivity embedded firmware package for Microchip's [WFI32E01PC](https://www.microchip.com/en-us/product/WFI32E01PC) IoT module that runs on the [PIC32 WFI32E Curiosity Board](https://www.microchip.com/en-us/development-tool/EV12F11A) or the [WFI32-IoT Development Board](https://www.microchip.com/en-us/development-tool/ev36w50a). The [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) solution includes a full set of firmware source code to enable custom modifications and the default binary image that can be used straight "out of the box". The solution is publicly available on [Microchip Technology's GitHub account](https://github.com/MicrochipTech). To review the software, clone the repository, download a ZIP file, or just get the latest release of the AnyCloud binary file, access the [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) repository on [GitHub](https://github.com).
 
 The [WFI32E01PC](https://www.microchip.com/en-us/product/WFI32E01PC) module (which has been provisioned with the [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) firmware) is meant to act as a "UART to Cloud" bridge to enable the Host MCU of an IoT device to easily connect to (and communicate with) a cloud application. In this example, a PC runs various Python scripts to emulate the operations that a Host MCU would need to execute in order to authenticate, connect, and communicate with a Microsoft Azure IoT Central application.
 
@@ -17,48 +17,69 @@ The [WFI32E01PC](https://www.microchip.com/en-us/product/WFI32E01PC) module (whi
 
 ## Getting Started
 
-### Step 1 - Install the AnyCloud™ Firmware onto the Development Board
+### Step 1 - Set up a WFI32E01 Development Board as an AnyCloud™ UART-to-Cloud Bridge
 
-Follow all of the existing instructions found in the [AnyCloud™ Getting Started Guide](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud/blob/main/README.md) to get the hardware platform set up and verified. During the setup process, you will discover the Virtual COM port number that is associated with your board's USB-to-UART serial connection with your PC. For example, with the help of the the Windows Device Manager, under the category `Ports (COM & LPT)`, the Virtual COM port may show up as a "USB Serial Device" as illustrated here:
+Follow the section titled "Re-Flashing the device" in the [AnyCloud™ Getting Started Guide](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud/blob/main/README.md) to program the AnyCloud firmware onto one of the WFI32E01 development boards (if using WFI32-IoT, skip the step regarding a jumper setting).
+
+After the AnyCloud firmware has been programmed, proceed with connecting a [USB-to-UART converter](https://www.newark.com/c/cable-wire-cable-assemblies/cable-assemblies/usb-adapter-cables?conversion-type=usb-to-uart-converter) between the PC and the specified header for the specific WFI32E01 development board being used:
+
+- [WFI32-IoT](https://www.microchip.com/en-us/development-tool/ev36w50a): Connect the USB-to-UART converter's TXD & RXD pins to the `RX` & `TX` pins of the mikroBUS Header (`J402`), respectively
+
+    <img src=".//media/WFI32-IoT_J402.png"/>
+
+- [PIC32 WFI32E Curiosity](https://www.microchip.com/en-us/development-tool/EV12F11A): Connect the USB-to-UART converter's TXD & RXD pins to to the `U1RX` & `U1TX` pins of the GPIO Header (`J207`), respectively
+
+    <img src=".//media/WFI32-Curiosity_J207.png"/>
+
+**Note** After the MPLAB IPE has completed the programming of the AnyCloud firmware image (HEX file), the IPE program holds the WFI32 module in reset, so the board should be disconnected from the USB cable and then reconnected in order for the [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) firmware to run after it has been programmed.
+
+ You will need to discover the Virtual COM port number that is associated with your USB-to-UART converter's serial connection with your PC. For example, with the help of the the Windows `Device Manager`, under the category `Ports (COM & LPT)`, the Virtual COM port may show up as a "USB Serial Device" as illustrated here:
 
 <img src="./media/WindowsDeviceManager.png" alt="A screenshot of a new Device button" width = 300/>
 
-#### 1.1 Using the text editor of your choice, open the `AzureAnyCloud.py` script and locate the following line towards the top of the file:
+**Note** For MacOS users - from a `Terminal` window, execute the following command line
+```bash
+ls /dev/tty.usb*
+```
+to see a list of all USB devices which have been assigned to serial ports - most likely one of them is the string that will be assigned to the `COM_PORT` variable in the script
+
+#### 1.1 Create a copy of the `AzureAnyCloud.py` file and rename it to something more specific (e.g. `AzureAnyCloud_<YOURINITIALS>.py` (in order to preserve the original baseline script in case you need to reference it again in the future)
+
+#### 1.2 Using the text editor of your choice, open the newly-created `AzureAnyCloud_<YOURINITIALS>.py` file and locate the following line towards the top of the file:
 
 ```bash
 COM_PORT = "your_COM_Port"
 ```
-For example, if the USB Serial Device is associated with `COM4`, then the line would need to be changed to look like the following:
+
+Edit this line to reflect the Virtual COM port associated with your USB-to-UART converter's serial connection and save your changes to the script. For example, if the Windows Device Managers shows the USB Serial Device is associated with `COM4`, then the line would need to be changed to look like the following:
 
 ```bash
 COM_PORT = "COM4"
 ```
 
-Edit this line to reflect the Virtual COM port associated with your board's USB serial connection and save your changes to the script.
+Alternatively for MacOS users - the COM_PORT setting may look something like
 
-#### 1.2 Open the `WFI32_DeviceCert.py` script and repeat the same process for setting the COM port.
+```bash
+COM_PORT = "/dev/tty.usbserial-A51MXHIL"
+```
 
-#### 1.3 Open the `WFI32_RootCert.py` script and repeat the same process for setting the COM port.
+#### 1.3 Open the `WFI32_DeviceCert.py` script and repeat the same process for setting the `COM_PORT` variable. After saving the changes, close the file and then reopen the file to confirm that the COM port was correctly updated.
+
+#### 1.4 Open the `WFI32_RootCert.py` script and repeat the same process for setting the `COM_PORT` variable. After saving the changes, close the file and then reopen the file to confirm that the COM port was correctly updated.
+
+#### 1.5 Cycle power to the board by disconnecting and reconnecting the USB cable. For good measure, press the `RESET` button on the WFI32-IoT development board (for the WFI32E Curiosity development board, the reset button is the `MCLR` button)
 
 <br>
 
-**Note** After the MPLAB X IPE has completed the programming of the FW image (HEX file), the IPE holds the WFI32 module in reset, so the board should be disconnected from the USB cable and then reconnected in order for the [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) firmware to run after it has been programmed.
+### Step 2 - Read the Device and Root Certificates from the Module
 
-Recommendations:
-
-Clone the repository to your local machine, even if you are not planning to rebuild the project initially.  This provides a local copy of the README file, you can review project source code to self-support, and it includes the pre-built HEX file that can be programmed without rebuilding if that is your wish. 
-
-    git clone https://github.com/MicrochipTech/PIC32MZW1_AnyCloud
-
-**Note** To execute AT commands from a terminal to learn the [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) software, make sure the terminal application has the capability to append `\r\n` (Carriage Return + Line Feed) to the commands you are executing.  The AT commands are not executed without the `\r\n` terminating characters.  
-
-### Step 2 - Read the Root and Device Certificates from the Module
-
-The device certificate file will be needed when we create the device in Azure IoT Central using the individual enrollment method. Another option is to use the group enrollment method which requires uploading the root certificate file to the Azure IoT Central application, so that any device which presents a leaf certificate that was derived from the root certificate will automatically be granted access to registration.
+The device certificate file will be needed when we create the device in Azure IoT Central using the individual enrollment method. Another option is to use the group enrollment method which requires uploading the signer certificate file (which could also be the root) to the Azure IoT Central application, so that any device which presents a leaf certificate that was derived from the signer certificate will automatically be granted access to registration.
 
 #### 2.1 The **Device** certificate can be read out of the WFI32 module by executing the `WFI32_DeviceCert.py` script. The certificate file will be named based on the device's Common Name (i.e. `<"COMMON_NAME">.PEM`). Execute the following command in a PowerShell or Command Prompt window:
 
     python3 WFI32_DeviceCert.py
+
+**Note** If the development board is not responding to the script's commands, kill the python operation (by hitting ESC), press the reset button on the development board, and re-run the script
 
 #### 2.2 Use OpenSSL to verify that the Common Name used in the device certificate matches the name of the PEM file which was auto-generated by the script. The following command will list certificate details in an easy to read format:
     
@@ -89,6 +110,8 @@ The output of the command will show all fields, but the common name is what is r
 
     python3 WFI32_RootCert.py
 
+**Note** If the development board is not responding to the script's commands, kill the python operation (by hitting ESC), press the reset button on the development board, and re-run the script
+
 ### Step 3 - Create an Azure IoT Central Application
 
 If you already have an existing IoT Central Application created, skip to Step 4.
@@ -107,23 +130,23 @@ Choose either the [Group](./IoT_Central_Group_Enrollment.md) or [Individual](./I
 
 ### Step 5 - Configuring the AzureAnyCloud Script
 
-1. Open the `AzureAnyCloud.py` script in a text editor of your choice
+1. Open the `AzureAnyCloud_<YOURINITIALS>.py` script in a text editor of your choice
 
     <img src="./media/ScriptConfiguration.png" alt="Script Configuration" width = 400/>
 
 2. Enter your WiFi network's SSID and passphrase as the *WiFi Credentials*
 3. Enter your ID scope and Device ID (Common Name) into the *Azure Application/Device Information* settings.
-4. Enter the model ID of the device template you wish to interact with in IoT Central.  Example, we can emulate the SAM-IoT Demonstration board from the script using *`dtmi:com:Microchip:SAM_IoT_WM;2`* as the model ID. 
+4. Enter the model ID of the device template you wish to interact with in IoT Central. For example, we can emulate a device based on the device model *[`dtmi:com:Microchip:SAM_IoT_WM;2`](https://github.com/Azure/iot-plugandplay-models/blob/main/dtmi/com/microchip/sam_iot_wm-2.json)* (which is published in the [IoT Plug and Play Models Repository](https://github.com/Azure/iot-plugandplay-models)). 
 
-The model ID will be declared during the DPS registration process.  If the model is published in the [Azure Device Model Repository](https://devicemodels.azure.com), IoT Central will automatically download the device model and use it to interact with your device based on the model's characteristics.  You can also create a custom device template in your IoT Central application, which will generate a new model ID that can declared and used with the [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) repository on [GitHub](https://github.com) as well.
+The model ID will be announced by the device during the DPS registration process.  If the model has been published in the [Azure Device Model Repository](https://devicemodels.azure.com), IoT Central will automatically download the device model and use it to interact with your device based on the model's characteristics.  You can also create a custom device template in your IoT Central application, which will generate a new model ID that can declared and used with the [AnyCloud™](https://github.com/MicrochipTech/PIC32MZW1_AnyCloud) repository on [GitHub](https://github.com) as well.
 
 ### Step 6 - Run the AzureAnyCloud Script
 
-To run the Azure IoT Central script type the following command line:
+Press the reset button on the development board. It is always good practice to press the reset button just before each time a new script operation is invoked. To run the main Azure IoT Central script, execute the following command line:
 
-    python3 AzureAnyCloud.py
+    python3 AzureAnyCloud_<YOURINITIALS>.py
 
-The script will check if you are connected to a WiFi network. If you are not connected, it will issue commands to connect with the SSID and passphrase provided.
+The script will first check to see if you are currently connected to a WiFi network. If you are not connected, it will issue commands to connect with an Access Point using the SSID and passphrase settings.
 
     --------------------------------------------------------------------------------
     Starting the AnyCloud Azure IoT Central Demonstration
@@ -201,7 +224,7 @@ It will then check if you are already connected to an MQTT broker.  If not, it w
     >
     Event: MQTT broker connected
 
-    Event: DPS subscription recieved notification
+    Event: DPS subscription received notification
 Finally, the script subscribes to the DPS MQTT notification topic, and publishes to a topic that registers the device.  The initial publish to the registration topic includes the model ID as the payload.  The result of this publication will be a JSON message with an "operationID" field, and the status "assigning".  The code then delays 3 seconds, and issues a polling request to a second topic to determine if the registration is complete.  If the status is still "assigning", it will continue to delay 3 seconds and poll the registration status until the response status is "assigned".  Once the status is "assigned", the response will include a "assignedHub" key, with the host name for the Azure IoT Central application.
 
     subscribe to DPS result topic
@@ -219,11 +242,11 @@ Finally, the script subscribes to the DPS MQTT notification topic, and publishes
     >
     +MQTTPUB:47,"$dps/registrations/res/202/?$rid=&retry-after=3",94,"{"operationId":"4.65f62b2644c85bb1.331ffb1b-35e2-4b5a-9e68-f1fa7d5efc33","status":"assigning"}"
     >
-    Event: DPS subscription recieved notification
+    Event: DPS subscription received notification
     --------------------------------
     subscription topic received
       "$dps/registrations/res/202/?$rid=&retry-after=3"
-    subcription payload recieved
+    subcription payload received
     {
         "operationId": "4.65f62b2644c85bb1.331ffb1b-35e2-4b5a-9e68-f1fa7d5efc33",
         "status": "assigning"
@@ -234,11 +257,11 @@ Finally, the script subscribes to the DPS MQTT notification topic, and publishes
     >
     +MQTTPUB:48,"$dps/registrations/res/202/?$rid=2&retry-after=3",177,"{"operationId":"4.65f62b2644c85bb1.331ffb1b-35e2-4b5a-9e68-f1fa7d5efc33","status":"assigning","registrationState":{"registrationId":"sn0123FE0CF960432D01","status":"assigning"}}"
     >
-    Event: DPS subscription recieved notification
+    Event: DPS subscription received notification
     --------------------------------
     subscription topic received
       "$dps/registrations/res/202/?$rid=2&retry-after=3"
-    subcription payload recieved
+    subcription payload received
     {
         "operationId": "4.65f62b2644c85bb1.331ffb1b-35e2-4b5a-9e68-f1fa7d5efc33",
         "status": "assigning",
@@ -247,11 +270,11 @@ Finally, the script subscribes to the DPS MQTT notification topic, and publishes
             "status": "assigning"
         }
     }
-    Event: DPS subscription recieved notification
+    Event: DPS subscription received notification
     --------------------------------
     subscription topic received
       "$dps/registrations/res/200/?$rid=3"
-    subcription payload recieved
+    subcription payload received
     {
         "operationId": "4.65f62b2644c85bb1.331ffb1b-35e2-4b5a-9e68-f1fa7d5efc33",
         "status": "assigned",
@@ -316,7 +339,7 @@ The commands executed to connect to connect to IoT Central follow below.
     +MQTTCONN:1
     >
 
-After the connection is completed, the next behavior is subscribing to the three topics are used by Azure IoT Central to communicate with devices.  The first topic recieves commands from IoT Central.  The second is notified when you request the device twin status.  The final topic is used for property updates.
+After the connection is completed, the next behavior is subscribing to the three topics are used by Azure IoT Central to communicate with devices.  The first topic receives commands from IoT Central.  The second is notified when you request the device twin status.  The final topic is used for property updates.
 
     AT+MQTTSUB="$iothub/methods/POST/#",1
     OK
@@ -334,7 +357,7 @@ After the connection is completed, the next behavior is subscribing to the three
     +MQTTSUB:0
     >
 
-Once the topics are subcribed, the script requests the current status of the device twin from IoT Central by publishing to the `$iothub/twin/GET/` topic.  That is met by a response that is every property that has been previously writen by the device, including parameters updated during previous connections.  The script prints out a pretty version of the JSON object recieved, and grabs the telemetry interval, which will be adopted as the rate periodic telemetry is sent to IOTC later on.
+Once the topics are subcribed, the script requests the current status of the device twin from IoT Central by publishing to the `$iothub/twin/GET/` topic.  That is met by a response that is every property that has been previously writen by the device, including parameters updated during previous connections.  The script prints out a pretty version of the JSON object received, and grabs the telemetry interval, which will be adopted as the rate periodic telemetry is sent to IOTC later on.
 
     Read current device twin settings from IOTC
 
@@ -346,7 +369,7 @@ Once the topics are subcribed, the script requests the current status of the dev
     --------------------------------
     subscription topic received
       "$iothub/twin/res/200/?$rid=4"
-    subcription payload recieved
+    subcription payload received
     {
         "desired": {
             "telemetryInterval": 5,
@@ -441,7 +464,7 @@ IoT Central will publish a message to the property PATCH topic.  The message wil
     -------------------------------
     subscription topic received
       "$iothub/twin/PATCH/properties/desired/?$version=105"
-    subcription payload recieved
+    subcription payload received
     {
         "telemetryInterval": 5,
         "$version": 105
@@ -469,7 +492,7 @@ A pretty version of the response payload follows for readability
         }
     }
 
-There are several things to note in the response.  The response to a writeable property must be in a specific format.  It includes an acknowledge code ("ac"), which is essentially an HTTP status code. "200" for OK.  Other codes are availble to indicate problematic states. The version number recieved with the telemetry interval is a value used to serialize and track the requests.  The version recieved in the write request must be returned in the acknowledge version ("av") field of the response.  "ad" is an optional string that can be included for a descriptive text, and the last field returned is the updated value for the received property. 
+There are several things to note in the response.  The response to a writeable property must be in a specific format.  It includes an acknowledge code ("ac"), which is essentially an HTTP status code. "200" for OK.  Other codes are availble to indicate problematic states. The version number received with the telemetry interval is a value used to serialize and track the requests.  The version received in the write request must be returned in the acknowledge version ("av") field of the response.  "ad" is an optional string that can be included for a descriptive text, and the last field returned is the updated value for the received property. 
 
 Depending how quickly the write propery response is received, it is possible that IoT Central will show the value as pending. If the device is offline or doesn't respond to writeable property request, the value can display as pending forever in IoT Central.
 
@@ -498,7 +521,7 @@ IoT Central will publish to the topic described above with the payload defined i
     --------------------------------
     subscription topic received
       "$iothub/methods/POST/reboot/?$rid=1"
-    subcription payload recieved
+    subcription payload received
     {
         "delay": "PT5S"
     }
@@ -514,19 +537,19 @@ When the device template opens, expand the reboot command with the drop down con
 
 <img src="./media/IOTC_Navigate_Command_Objects.png" alt="Navigate to the reboot command in the Device Template" width = 800/>
 
-Notice the command is enabled, and a response is expected.  There are also two objects being defined: one for the command playload, and one for the response payload. Click the Define button for the response payload, to view the object that is expected to be returned by the embedded device when the reboot command is recieved. 
+Notice the command is enabled, and a response is expected.  There are also two objects being defined: one for the command playload, and one for the response payload. Click the Define button for the response payload, to view the object that is expected to be returned by the embedded device when the reboot command is received. 
 
 <img src="./media/IOTC_Reboot_Response_Object.png" alt="The reboot command Response Object" width = 600/>
 
 From here notice two items are expected in the response payload, a "status" string, and a "delay" integer, that should match the reboot delay.  
 
-Two other things are dictated by the plug-n-play method response standard.  The response topic published to, includes an status code in the path of the topic, and the the rid value recieved with the method request.  
+Two other things are dictated by the plug-n-play method response standard.  The response topic published to, includes an status code in the path of the topic, and the the rid value received with the method request.  
 
 The response code is typically "200" for OK, and the rid value is handled much like the version field of property write resopnses. 
 
 So the response topic follows this pattern: "$iothub/methods/res/`Response Code`/?$rid=`Request_RID`"
 
-Putting it all together for for the example reboot command received above, the response published has the following topic and payload.
+Putting it all together for for the example reboot command received above, the response published has the following topic and payload:
 
 
 

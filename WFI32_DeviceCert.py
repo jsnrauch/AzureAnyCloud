@@ -40,7 +40,7 @@ class AnyCloud:
   def cmd_issue(self, command):
     self.ser.write(bytearray(command, 'utf-8'))
   
-  def serial_recieve(self):
+  def serial_receive(self):
     read_val = self.ser.read(1)
     if read_val != b'':
       if self.DEBUG == True:
@@ -176,7 +176,7 @@ class AnyCloud:
     elif self.app_state == 254:
       exit()
       
-    rx_data = self.serial_recieve()
+    rx_data = self.serial_receive()
     # parse received data
     if rx_data != "":
       print(rx_data)

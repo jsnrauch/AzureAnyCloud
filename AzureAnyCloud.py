@@ -13,13 +13,6 @@ PASSPHRASE = "your_PASSPHRASE"
 # Azure Application/Device Information
 ID_SCOPE = "your_ID_SCOPE"
 DEVICE_ID = "your_DEVICE_ID"
-MODEL_ID = "your_MODEL_ID"
-
-COM_PORT = "COM4"
-SSID = "JasonWiFi"
-PASSPHRASE = "rauch:net:secure" 
-ID_SCOPE = "0ne006ED32B"
-DEVICE_ID = "sn0123FE0CF960432D01"
 MODEL_ID = "dtmi:com:Microchip:SAM_IoT_WM;2"
 
 # -----------------------------------------------------------------------------
@@ -126,7 +119,7 @@ class AnyCloud:
     # MQTT handling variables 
     self.rid = 0                         # request id field used by some publish commands.
                                          #   incremented between publishing attempts
-    self.sub_payload = ""                # application serial buffer used to process recieved data.
+    self.sub_payload = ""                # application serial buffer used to process received data.
        
     # wifi connection related variables
     self.wifi_state = 0                  # state variable for wifi initialization
@@ -161,7 +154,7 @@ class AnyCloud:
     self.evt_handler = None
     
 
-    self.DEBUG = debug        # if set to True, will print all recieved data.
+    self.DEBUG = debug        # if set to True, will print all received data.
     
     self.SER_TIMEOUT = 0.1    # sets how long pyserial will delay waiting for a character
                               #   reading a character a time, no need to wait for long messages
@@ -185,9 +178,9 @@ class AnyCloud:
   def cmd_issue(self, command):
     self.ser.write(bytearray(command, 'utf-8'))
 
-  # poll serial port for recieved. read until prompt '>',
+  # poll serial port for received. read until prompt '>',
   # return whole message
-  def serial_recieve(self):
+  def serial_receive(self):
     read_val = self.ser.read(1)
     if read_val != b'':
       if self.DEBUG == True:
@@ -226,7 +219,7 @@ class AnyCloud:
     payload = ATMQTTPUB_payload[(payload_len_str_end+2):(payload_len_str_end + payload_len + 2)]
     print("--------------------------------\r\nsubscription topic received\r\n  "+topic)
     json_payload = json.loads(payload)
-    print("subcription payload recieved\r\n"+json.dumps(json_payload, indent = 4)+"\r\n--------------------------------")
+    print("subcription payload received\r\n"+json.dumps(json_payload, indent = 4)+"\r\n--------------------------------")
     return (topic, payload)
     
    
@@ -270,7 +263,7 @@ class AnyCloud:
       print("not expecting additional IOTC topics for subscription")
       
   def evt_dps_topic_notified(self):
-    print("Event: DPS subscription recieved notification")
+    print("Event: DPS subscription received notification")
     if self.opId == "":
       (topic, payload) = self.processTopicNotification(self.sub_payload)
       json_payload = json.loads(payload)
@@ -498,7 +491,7 @@ class AnyCloud:
     self.mqtt_publish(0,0,(TOPIC_IOTC_PROPERTY_REQEST + str(self.rid)),"")
     
   def iotc_int_telemetry_send(self,Parameter, iVal):
-    print("Sending " +Parameter+ " telemetry value of: " +str(iVal)+"\r\n");
+    print("Sending [" +Parameter+ "] telemetry value of: " +str(iVal)+"\r\n");
     payload = '{\\\"' + Parameter + '\\\" : ' +str(iVal) +'}'
     self.mqtt_publish(0,0,TOPIC_IOTC_TELEMETRY,payload)
     
@@ -523,6 +516,7 @@ class AnyCloud:
       self.lightSensor = self.lightSensor + 10
       if self.lightSensor >100 :
         self.lightSensor = 10
+      print("\r\nTelemetry Interval = " +str(self.telemetryInterval)+ " seconds\r\n");
       self.iotc_int_telemetry_send("light", self.lightSensor)
       self.iotc_int_telemetry_send("temperature", 22)
     
@@ -780,7 +774,7 @@ class AnyCloud:
     elif self.app_state == APP_STATE_IOTC_DEMO:
       self.sm_iotc_app()
     
-    rx_data = self.serial_recieve()
+    rx_data = self.serial_receive()
     # parse received data
     if rx_data != "":
       print(rx_data)
